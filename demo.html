@@ -3,9 +3,71 @@
 <head>
     <title>at-layout-text</title>
     <meta name="viewport" content="initial-scale=1.0 , maximum-scale=1.0 , minimum-scale=1.0 , width=device-width , user-scalable=no" />
+
+    <style>
+        body {
+            margin: 0;
+            font-family: "Open Sans", Calibri, Candara, Arial, sans-serif;
+            font-size: 15px;
+            line-height: 1.42857143;
+            color: #333;
+            background-color: #fff;
+        }
+
+        .row {
+            margin-right: -15px;
+            margin-left: -15px;
+        }
+
+        .container {
+            padding-right: 15px;
+            padding-left: 15px;
+            margin-right: auto;
+            margin-left: auto;
+        }
+
+        .col-sm-offset-2 {
+            margin-left: 16.66666667%;
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                width: 750px;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .container {
+                width: 970px;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .container {
+                width: 1170px;
+            }
+        }
+
+        .col-sm-8 {
+            position: relative;
+            min-height: 1px;
+            padding-right: 15px;
+            padding-left: 15px;
+        }
+
+        h4 {
+            font-family: inherit;
+            font-weight: 500;
+            line-height: 1.1;
+            color: inherit;
+            font-size: 19px;
+        }
+
+        p {
+            margin: 0 0 10px;
+        }
+    </style>
     <script src="../platform/platform.js"></script>
-    <link rel="stylesheet" href="bootstrap.min.css" />
-    <link rel="stylesheet" href="bootstrap-theme.min.css" />
     <link rel="import" href="../polymer/polymer.html" />
     <link rel="import" href="at-layout-text.html" />
 </head>
