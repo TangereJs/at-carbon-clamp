@@ -8,31 +8,55 @@
 * http://sam.zoy.org/wtfpl/
 */
 
-<polymer-element name="at-carbon-clamp" text={{data}} width="100%" lines="5">
+<polymer-element name="at-carbon-clamp">
   <template>
+    <style>    
+      :host {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+		display: block;
+      }
+	  
+	  #textPara {
+		-webkit-transform: translateZ(0); /* hack to force Chrome to handle divs outside visible viewport correctly */
+	  }
+    </style>
     <content>
-      <p id="textPara"></p>
+      <div id="textPara"></div>
     </content>
   </template>
   <script>
     (function () {
       Polymer('at-carbon-clamp', {
-        ready: function () {
-          clampText(this);
+	  publish: { 
+		text: { value:'', reflect: true },
+		lines: { value:1, reflect: true },
+	  },
+        domReady: function () {
+			if(this.lines==1) {
+				clampText(this);
+			} else {
+				// delay until page rendered
+				window.setTimeout(function() {
+				clampText(this);
+				}.bind(this),0);
+			}
         },
-        attached: function () {
-          var g_self = this;
+        attached: function () {          
           window.addEventListener('resize', function (event) {
-            clampText(g_self);
-          });
+            clampText(this);
+          }.bind(this));
         },
       });
 
       function clampText(elem) {
-        elem.$.textPara.textContent = elem.getAttribute('text');
-        elem.$.textPara.style.width = elem.getAttribute('width');
+        elem.$.textPara.textContent = elem.text;
+        elem.$.textPara.style.width = '100%';
+        var lineCount = parseInt(elem.lines);	
 
-        var lineCount = parseInt(elem.getAttribute('lines'));
+		
         if (typeof (elem.style.webkitLineClamp) !== 'undefined') {
           elem.$.textPara.style.overflow = "hidden";
           elem.$.textPara.style.webkitLineClamp = lineCount;
