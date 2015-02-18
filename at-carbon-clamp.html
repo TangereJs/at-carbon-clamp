@@ -23,8 +23,8 @@
         -webkit-transform: translateZ(0); /* hack to force Chrome to handle divs outside visible viewport correctly */
       }
     </style>
-    <content>
-      <div id="textPara"></div>
+    <div id="textPara"></div>
+    <content>      
     </content>
   </template>
   <script>
@@ -34,7 +34,15 @@
           text: { value: '', reflect: true },
           lines: { value: 1, reflect: true },
         },
+        textChanged: function(oldValue, newValue){
+          this.$.textPara.textContent = newValue;
+        },
+        linesChanged: function(oldValue, newValue){
+          clampText(this);
+        },
         domReady: function () {
+          this.text = this.text !== undefined && this.text !== '' ? this.text : this.textContent;
+          this.textContent = '';
           if (this.lines == 1) {
             clampText(this);
           } else {
