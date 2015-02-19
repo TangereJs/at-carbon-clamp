@@ -1,4 +1,4 @@
-﻿/*
+/*
 * Copyright (c) 2014 adenin TECHNOLOGIES. All rights reserved.
 * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
 *
@@ -64,13 +64,13 @@
         elem.$.textPara.style.width = '100%';
         var lineCount = parseInt(elem.lines);
 
-
-        if (typeof (elem.style.webkitLineClamp) !== 'undefined') {
-          elem.$.textPara.style.overflow = "hidden";
-          elem.$.textPara.style.webkitLineClamp = lineCount;
-          elem.$.textPara.style.display = "-webkit-box";
-          elem.$.textPara.style.webkitBoxOrient = "vertical";
-        } else {
+        // *ma* removed webkitLineClamp as it doesn't work reliably with Polymer flexbox layout
+        //if (typeof (elem.style.webkitLineClamp) !== 'undefined') {
+        //  elem.$.textPara.style.overflow = "hidden";
+        //  elem.$.textPara.style.webkitLineClamp = lineCount;
+        //  elem.$.textPara.style.display = "-webkit-box";
+        //  elem.$.textPara.style.webkitBoxOrient = "vertical";
+        //} else {
           if (lineCount === 1) {
             elem.$.textPara.style.textOverflow = 'ellipsis';
             elem.$.textPara.style.whiteSpace = 'nowrap';
@@ -78,7 +78,7 @@
           } else {
             clamp(elem.$.textPara, { clamp: lineCount });
           }
-        }
+        //}
 
       }
 
