@@ -45,12 +45,15 @@
             }
         },
           
+        options: new Object(),
+        
         textChanged: function(){
             if(!this._afterReady){
                 return;
             }
             
             this.$.textPara.textContent = this.text;
+            this.clampText();
         },
           
         linesChanged: function(){
@@ -62,35 +65,26 @@
         },
           
         attached: function () {
-            console.log("attached");
             var that = this;
             window.addEventListener('resize', function (event) {
                 that.clampText();
             }.bind(this));
         },
         
-        domReady: function () {
-            console.log("ready");
+        ready: function () {
+            this._afterReady = true; //Flag that should fix issue of properties triggering observer method before ready state
             
-            this._afterReady = true;
-                
-            this.text = this.text !== undefined && this.text !== '' ? this.text : this.textContent;
-            this.textContent = '';
-            if (this.lines == 1) {
-                this.clampText();
-            } else {
-                // delay until page rendered
-                window.setTimeout(function () {
-                    this.clampText();
-                }.bind(this), 0);
+            if(this.text != ''){
+                this.textChanged();
+            }
+            
+            if(this.lines != 1){
+                this.linesChanged();
             }
         },
         
         clampText: function () {
-            elem = this;
-            elem.$.textPara.textContent = elem.text;
-            elem.$.textPara.style.width = '100%';
-            var lineCount = parseInt(elem.lines);
+            this.$.textPara.style.width = '100%';
 
             // *ma* removed webkitLineClamp as it doesn't work reliably with Polymer flexbox layout
             //if (typeof (elem.style.webkitLineClamp) !== 'undefined') {
@@ -99,43 +93,37 @@
             //  elem.$.textPara.style.display = "-webkit-box";
             //  elem.$.textPara.style.webkitBoxOrient = "vertical";
             //} else {
-            if (lineCount === 1) {
-                elem.$.textPara.style.textOverflow = 'ellipsis';
-                elem.$.textPara.style.whiteSpace = 'nowrap';
-                elem.$.textPara.style.overflow = 'hidden';
+            if (this.lines === 1) {
+                this.$.textPara.style.textOverflow = 'ellipsis';
+                this.$.textPara.style.whiteSpace = 'nowrap';
+                this.$.textPara.style.overflow = 'hidden';
             } else {
-                this.clamp(elem.$.textPara, { clamp: lineCount });
+                this.clamp();
             }
             //}
         },
 
-        clamp: function (element, options) {
-            options = options || {};
+        clamp: function () {
+            var element = this.$.textPara;
+            
+            options = {
+                    clamp: this.lines || 2,
+                    splitOnChars: ['.', '-', '–', '—', ' '], //Split on sentences (periods), hypens, en-dashes, em-dashes, and words (spaces).
+                    animate: false,
+                    truncationChar: '…'
+                };
 
+            
             var self = this,
-                win = window,
-                opt = {
-                    clamp: options.clamp || 2,
-                    splitOnChars: options.splitOnChars || ['.', '-', '–', '—', ' '], //Split on sentences (periods), hypens, en-dashes, em-dashes, and words (spaces).
-                    animate: options.animate || false,
-                    truncationChar: options.truncationChar || '…',
-                    truncationHTML: options.truncationHTML
-                },
-
                 sty = element.style,
                 originalText = element.innerHTML,
 
-                clampValue = opt.clamp,
+                clampValue = options.clamp,
                 isCSSValue = clampValue.indexOf && (clampValue.indexOf('px') > -1 || clampValue.indexOf('em') > -1),
                 truncationHTMLContainer;
-
-            if (opt.truncationHTML) {
-                truncationHTMLContainer = document.createElement('span');
-                truncationHTMLContainer.innerHTML = opt.truncationHTML;
-            }
           
             // MEAT AND POTATOES (MMMM, POTATOES...) ______________________________________
-            var splitOnChars = opt.splitOnChars.slice(0), splitChar = splitOnChars[0], chunks, lastChunk;
+            var splitOnChars = options.splitOnChars.slice(0), splitChar = splitOnChars[0], chunks, lastChunk;
 
 
             // CONSTRUCTOR ________________________________________________________________
@@ -234,7 +222,7 @@
                 return this.getLastChild(Array.prototype.slice.call(elem.children).pop());
             }
             //This is the absolute last child, a text node, but something's wrong with it. Remove it and keep trying
-            else if (!elem.lastChild || !elem.lastChild.nodeValue || elem.lastChild.nodeValue == '' || elem.lastChild.nodeValue == opt.truncationChar) {
+            else if (!elem.lastChild || !elem.lastChild.nodeValue || elem.lastChild.nodeValue == '' || elem.lastChild.nodeValue == options.truncationChar) {
                 elem.lastChild.parentNode.removeChild(elem.lastChild);
                 return this.getLastChild(element);
             }
@@ -251,7 +239,7 @@
         truncate: function (target, maxHeight) {
             if (!maxHeight) { return; }
 
-            var nodeValue = target.nodeValue.replace(opt.truncationChar, '');
+            var nodeValue = target.nodeValue.replace(options.truncationChar, '');
 
             //Grab the next chunks
             if (!chunks) {
@@ -282,8 +270,8 @@
 
             //Insert the custom HTML before the truncation character
             if (truncationHTMLContainer) {
-                target.nodeValue = target.nodeValue.replace(opt.truncationChar, '');
-                element.innerHTML = target.nodeValue + ' ' + truncationHTMLContainer.innerHTML + opt.truncationChar;
+                target.nodeValue = target.nodeValue.replace(options.truncationChar, '');
+                element.innerHTML = target.nodeValue + ' ' + truncationHTMLContainer.innerHTML + options.truncationChar;
             }
 
             //Search produced valid chunks
@@ -314,10 +302,10 @@
             }
 
             //If you get here it means still too big, let's keep truncating
-            if (opt.animate) {
+            if (options.animate) {
                 setTimeout(function () {
                     this.truncate(target, maxHeight);
-                }, opt.animate === true ? 10 : opt.animate);
+                }, options.animate === true ? 10 : options.animate);
             }
             else {
                 return this.truncate(target, maxHeight);
@@ -328,14 +316,14 @@
         * Resets global variables.
         */
         reset: function () {
-            splitOnChars = opt.splitOnChars.slice(0);
+            splitOnChars = options.splitOnChars.slice(0);
             splitChar = splitOnChars[0];
             chunks = null;
             lastChunk = null;
         },
         
         applyEllipsis: function (elem, str) {
-            elem.nodeValue = str + opt.truncationChar;
+            elem.nodeValue = str + options.truncationChar;
         }   
     });
 </script>
