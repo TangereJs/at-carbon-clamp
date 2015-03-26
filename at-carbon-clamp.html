@@ -47,7 +47,6 @@
         },
           
         options: new Object(),
-        splitOnChars: [],
         splitChar: '',
         chunks: null,
         lastChunk: null,
@@ -90,22 +89,23 @@
         },
         
         clampText: function () {
-            this.$.textPara.style.width = '100%';
-
-            // *ma* removed webkitLineClamp as it doesn't work reliably with Polymer flexbox layout
-            //if (typeof (elem.style.webkitLineClamp) !== 'undefined') {
-            //  elem.$.textPara.style.overflow = "hidden";
-            //  elem.$.textPara.style.webkitLineClamp = lineCount;
-            //  elem.$.textPara.style.display = "-webkit-box";
-            //  elem.$.textPara.style.webkitBoxOrient = "vertical";
-            //} else {
-            if (this.lines === 1) {
-                this.$.textPara.style.textOverflow = 'ellipsis';
-                this.$.textPara.style.whiteSpace = 'nowrap';
-                this.$.textPara.style.overflow = 'hidden';
-            } else {
-                this.clamp();
-            }
+            this.debounce('clamp', function(){
+                this.$.textPara.style.width = '100%';
+                // *ma* removed webkitLineClamp as it doesn't work reliably with Polymer flexbox layout
+                //if (typeof (elem.style.webkitLineClamp) !== 'undefined') {
+                //  elem.$.textPara.style.overflow = "hidden";
+                //  elem.$.textPara.style.webkitLineClamp = lineCount;
+                //  elem.$.textPara.style.display = "-webkit-box";
+                //  elem.$.textPara.style.webkitBoxOrient = "vertical";
+                //} else {
+                if (this.lines === 1) {
+                    this.$.textPara.style.textOverflow = 'ellipsis';
+                    this.$.textPara.style.whiteSpace = 'nowrap';
+                    this.$.textPara.style.overflow = 'hidden';
+                } else {
+                    this.clamp();
+                }
+            }, 350);
             //}
         },
 
@@ -130,8 +130,7 @@
             //truncationHTMLContainer;
           
             // MEAT AND POTATOES (MMMM, POTATOES...) ______________________________________
-            splitOnChars = options.splitOnChars.slice(0);
-            splitChar = splitOnChars[0];
+            splitChar = options.splitOnChars[0];
 
 
             // CONSTRUCTOR ________________________________________________________________
@@ -145,6 +144,7 @@
             var clampedText;
             clampValue = clampValue < 3 ? clampValue : clampValue += 1;
             var height = this.getMaxHeight(clampValue, this.element);
+            console.log(height);
             if (height <= this.element.clientHeight) {
                 clampedText = this.truncate(this.getLastChild(this.element), height);
             }
@@ -252,8 +252,8 @@
             //Grab the next chunks
             if (!this.chunks) {
                 //If there are more characters to try, grab the next one
-                if (splitOnChars.length > 0) {
-                    splitChar = splitOnChars.shift();
+                if (options.splitOnChars.length > 0) {
+                    splitChar = options.splitOnChars.shift();
                 }
                 //No characters to chunk by. Go character-by-character
                 else {
@@ -287,7 +287,7 @@
                 //It fits
                 if (this.element.clientHeight <= maxHeight) {
                     //There's still more characters to try splitting on, not quite done yet
-                    if (splitOnChars.length >= 0 && splitChar != '') {
+                    if (options.splitOnChars.length >= 0 && splitChar != '') {
                         this.applyEllipsis(target, this.chunks.join(splitChar) + splitChar + this.lastChunk);
                         this.chunks = null;
                     }
@@ -325,8 +325,7 @@
         * Resets global variables.
         */
         reset: function () {
-            splitOnChars = options.splitOnChars.slice(0);
-            splitChar = splitOnChars[0];
+            splitChar = options.splitOnChars[0];
             this.chunks = null;
             this.lastChunk = null;
         },
