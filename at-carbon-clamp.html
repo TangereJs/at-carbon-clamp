@@ -47,6 +47,7 @@
         },
           
         options: new Object(),
+        splitOnChars: ['.', '-', '–', '—', ' '], //Split on sentences (periods), hypens, en-dashes, em-dashes, and words (spaces).
         splitChar: '',
         chunks: null,
         lastChunk: null,
@@ -105,16 +106,16 @@
                 } else {
                     this.clamp();
                 }
-            }, 350);
+            }, 400);
             //}
         },
 
         clamp: function () {
+            this.reset();
             this.element = this.$.textPara;
             
             options = {
                     clamp: this.lines || 2,
-                    splitOnChars: ['.', '-', '–', '—', ' '], //Split on sentences (periods), hypens, en-dashes, em-dashes, and words (spaces).
                     animate: false,
                     truncationChar: '…'
                 };
@@ -129,10 +130,6 @@
                 
             //truncationHTMLContainer;
           
-            // MEAT AND POTATOES (MMMM, POTATOES...) ______________________________________
-            splitChar = options.splitOnChars[0];
-
-
             // CONSTRUCTOR ________________________________________________________________
             if (clampValue == 'auto') {
                 clampValue = this.getMaxLines(this.element);
@@ -142,12 +139,11 @@
             }
 
             var clampedText;
-            clampValue = clampValue < 3 ? clampValue : clampValue += 1;
+            //clampValue = clampValue < 3 ? clampValue : clampValue += 1;
             var height = this.getMaxHeight(clampValue, this.element);
-            console.log(height);
-            if (height <= this.element.clientHeight) {
+            //if (height <= this.element.clientHeight) {
                 clampedText = this.truncate(this.getLastChild(this.element), height);
-            }
+            //}
 
             return {
                 'original': originalText,
@@ -225,8 +221,8 @@
          * Gets an element's last child. That may be another node or a node's contents.
          */
         getLastChild: function (elem) {
-            //Current element has children, need to go deeper and get last child as a text node
-            if (elem.lastChild.children && elem.lastChild.children.length > 0) {
+            //Current element has children, need to go deeper and get last child as a text node            
+            if (Polymer.dom(elem.lastChild).childNodes && Polymer.dom(elem.lastChild).childNodes.length > 0) {
                 return this.getLastChild(Array.prototype.slice.call(elem.children).pop());
             }
             //This is the absolute last child, a text node, but something's wrong with it. Remove it and keep trying
@@ -247,13 +243,13 @@
         truncate: function (target, maxHeight) {
             if (!maxHeight) { return; }
 
-            var nodeValue = target.nodeValue.replace(options.truncationChar, '');
+            var nodeValue = target.nodeValue.replace(options.truncationChar, ' ');
 
             //Grab the next chunks
             if (!this.chunks) {
                 //If there are more characters to try, grab the next one
-                if (options.splitOnChars.length > 0) {
-                    splitChar = options.splitOnChars.shift();
+                if (this.splitOnChars.length > 0) {
+                    splitChar = this.splitOnChars.shift();
                 }
                 //No characters to chunk by. Go character-by-character
                 else {
@@ -287,7 +283,7 @@
                 //It fits
                 if (this.element.clientHeight <= maxHeight) {
                     //There's still more characters to try splitting on, not quite done yet
-                    if (options.splitOnChars.length >= 0 && splitChar != '') {
+                    if (this.splitOnChars.length >= 0 && splitChar != '') {
                         this.applyEllipsis(target, this.chunks.join(splitChar) + splitChar + this.lastChunk);
                         this.chunks = null;
                     }
@@ -325,7 +321,8 @@
         * Resets global variables.
         */
         reset: function () {
-            splitChar = options.splitOnChars[0];
+            this.$.textPara.innerHTML = this.text;
+            splitChar = this.splitOnChars[0];
             this.chunks = null;
             this.lastChunk = null;
         },
