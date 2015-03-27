@@ -36,13 +36,13 @@
                 type: String,
                 value: '', 
                 reflect: true ,
-                observer:'textChanged'
+                observer:'propChanged'
             },
             lines: { 
                 type: Number,
                 value: 1, 
                 reflect: true,
-                observer:'linesChanged'
+                observer:'propChanged'
             }
         },
           
@@ -53,16 +53,7 @@
         lastChunk: null,
         element: null,
         
-        textChanged: function(){
-            if(!this._afterReady){
-                return;
-            }
-            
-            this.$.textPara.textContent = this.text;
-            this.clampText();
-        },
-          
-        linesChanged: function(){
+        propChanged: function(){
             if(!this._afterReady){
                 return;
             }
@@ -80,17 +71,12 @@
         ready: function () {
             this._afterReady = true; //Flag that should fix issue of properties triggering observer method before ready state
             
-            if(this.text != ''){
-                this.textChanged();
-            }
-            
-            if(this.lines != 1){
-                this.linesChanged();
-            }
+            this.clampText();
         },
         
         clampText: function () {
             this.debounce('clamp', function(){
+                this.$.textPara.style.visibility = 'hidden';
                 this.$.textPara.style.width = '100%';
                 // *ma* removed webkitLineClamp as it doesn't work reliably with Polymer flexbox layout
                 //if (typeof (elem.style.webkitLineClamp) !== 'undefined') {
@@ -100,12 +86,14 @@
                 //  elem.$.textPara.style.webkitBoxOrient = "vertical";
                 //} else {
                 if (this.lines === 1) {
+                    this.$.textPara.textContent = this.text;
                     this.$.textPara.style.textOverflow = 'ellipsis';
                     this.$.textPara.style.whiteSpace = 'nowrap';
                     this.$.textPara.style.overflow = 'hidden';
                 } else {
                     this.clamp();
                 }
+                this.$.textPara.style.visibility = 'visible';
             }, 400);
             //}
         },
