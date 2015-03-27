@@ -76,7 +76,6 @@
         
         clampText: function () {
             this.debounce('clamp', function(){
-                this.$.textPara.style.visibility = 'hidden';
                 this.$.textPara.style.width = '100%';
                 // *ma* removed webkitLineClamp as it doesn't work reliably with Polymer flexbox layout
                 //if (typeof (elem.style.webkitLineClamp) !== 'undefined') {
@@ -93,31 +92,24 @@
                 } else {
                     this.clamp();
                 }
-                this.$.textPara.style.visibility = 'visible';
-            }, 400);
+            }, 10);
             //}
         },
 
         clamp: function () {
-            this.reset();
-            this.element = this.$.textPara;
-            
             options = {
                     clamp: this.lines || 2,
                     animate: false,
                     truncationChar: '…'
                 };
-
             
-            var self = this,
-                sty = this.element.style,
-                originalText = this.element.innerHTML,
-
+            this.reset();
+            this.element = this.$.textPara;
+                
+            var originalText = this.element.innerHTML,
                 clampValue = options.clamp,
                 isCSSValue = clampValue.indexOf && (clampValue.indexOf('px') > -1 || clampValue.indexOf('em') > -1);
                 
-            //truncationHTMLContainer;
-          
             // CONSTRUCTOR ________________________________________________________________
             if (clampValue == 'auto') {
                 clampValue = this.getMaxLines(this.element);
@@ -127,12 +119,17 @@
             }
 
             var clampedText;
-            //clampValue = clampValue < 3 ? clampValue : clampValue += 1;
             var height = this.getMaxHeight(clampValue, this.element);
-            //if (height <= this.element.clientHeight) {
+            
+            this.element.parentNode.style.textOverflow = 'ellipsis';
+            this.element.parentNode.style.overflow = 'hidden';
+            this.element.parentNode.style.height = height + "px";
+            
+            if(height < this.element.clientHeight){
                 clampedText = this.truncate(this.getLastChild(this.element), height);
-            //}
-
+            }
+            this.element.parentNode.style.height = "";
+            
             return {
                 'original': originalText,
                 'clamped': clampedText
@@ -230,7 +227,7 @@
          */
         truncate: function (target, maxHeight) {
             if (!maxHeight) { return; }
-
+            
             var nodeValue = target.nodeValue.replace(options.truncationChar, ' ');
 
             //Grab the next chunks
