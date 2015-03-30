@@ -37,7 +37,7 @@
             text: {
                 type: String,
                 value: '', 
-                reflect: true ,
+                reflect: true,
                 observer:'propChanged'
             },
             lines: { 
@@ -72,7 +72,22 @@
         ready: function () {
             this._afterReady = true; //Flag that should fix issue of properties triggering observer method before ready state
             
-            this.clampText();
+            if(this.innerText.length > 0 && this.text.length == 0){
+                this.text = this.innerText.slice().trim();
+                
+                for(var i=0; i<this.childNodes.length; i++)//Remove only text node from this.textContent
+                {
+                    if(this.childNodes[i].nodeType==3)//TEXT_NODE
+                    {
+                        this.removeChild(this.childNodes[i]);
+                        i--;
+                    }
+                }
+                this.reset();
+            }
+            else{
+                this.clampText();
+            }
         },
         
         clampText: function () {
