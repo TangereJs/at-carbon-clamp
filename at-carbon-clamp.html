@@ -24,7 +24,9 @@
     </style>
     <template>
         <at-core-theme></at-core-theme>
-        <div id="textPara"></div>
+        <div id="clampWrapper" style="height:100%">
+            <div id="textPara"></div>
+        </div>
         <content></content>
     </template>
 </dom-module>
@@ -47,8 +49,8 @@
         },
           
         options: new Object(),
-        splitOnChars: ['.', '-', '–', '—', ' '], //Split on sentences (periods), hypens, en-dashes, em-dashes, and words (spaces).
-        splitChar: '',
+//        splitOnChars: ['.', '-', '–', '—', ' '], //Split on sentences (periods), hypens, en-dashes, em-dashes, and words (spaces).
+        splitOnChars : /(?:(?:\s+)|(?:\.+)|(?:-+)|(?:–+)|(?:—+)|(?:,+))/, //Regex for text splitting on defined characters
         chunks: null,
         lastChunk: null,
         element: null,
@@ -77,13 +79,6 @@
         clampText: function () {
             this.debounce('clamp', function(){
                 this.$.textPara.style.width = '100%';
-                // *ma* removed webkitLineClamp as it doesn't work reliably with Polymer flexbox layout
-                //if (typeof (elem.style.webkitLineClamp) !== 'undefined') {
-                //  elem.$.textPara.style.overflow = "hidden";
-                //  elem.$.textPara.style.webkitLineClamp = lineCount;
-                //  elem.$.textPara.style.display = "-webkit-box";
-                //  elem.$.textPara.style.webkitBoxOrient = "vertical";
-                //} else {
                 if (this.lines === 1) {
                     this.$.textPara.textContent = this.text;
                     this.$.textPara.style.textOverflow = 'ellipsis';
@@ -92,8 +87,7 @@
                 } else {
                     this.clamp();
                 }
-            }, 10);
-            //}
+            }, 50);
         },
 
         clamp: function () {
@@ -162,7 +156,10 @@
                 }
             }
             
-            return window.getComputedStyle(elem, null).getPropertyValue(prop);
+            var propValue = window.getComputedStyle(elem, null).getPropertyValue(prop);
+            console.log("lvl1: " + propValue);
+                        
+            return propValue;
         },
         
         /**
@@ -198,6 +195,7 @@
                 // Normal line heights vary from browser to browser. The spec recommends
                 // a value between 1.0 and 1.2 of the font size. Using 1.1 to split the diff.
                 lh = parseInt(this.computeStyle(elem, 'font-size')) * 1.2;
+                console.log("lh: " + lh);
             }
             return parseInt(lh);
         },
@@ -229,19 +227,10 @@
             if (!maxHeight) { return; }
             
             var nodeValue = target.nodeValue.replace(options.truncationChar, ' ');
-
+            
             //Grab the next chunks
             if (!this.chunks) {
-                //If there are more characters to try, grab the next one
-                if (this.splitOnChars.length > 0) {
-                    splitChar = this.splitOnChars.shift();
-                }
-                //No characters to chunk by. Go character-by-character
-                else {
-                    splitChar = '';
-                }
-
-                this.chunks = nodeValue.split(splitChar);
+                this.chunks = nodeValue.split(this.splitOnChars);
             }
 
             //If there are chunks left to remove, remove the last one and see if
@@ -250,25 +239,19 @@
                 // console.log('chunks', this.chunks);
                 this.lastChunk = this.chunks.pop();
                 // console.log('lastChunk', this.lastChunk);
-                this.applyEllipsis(target, this.chunks.join(splitChar));
+                //this.applyEllipsis(target, this.chunks.join(" "));
             }
             //No more chunks can be removed using this character
             else {
                 this.chunks = null;
             }
 
-            //Insert the custom HTML before the truncation character
-            /*if (truncationHTMLContainer) {
-                target.nodeValue = target.nodeValue.replace(options.truncationChar, '');
-                element.innerHTML = target.nodeValue + ' ' + truncationHTMLContainer.innerHTML + options.truncationChar;
-            }*/
-
             //Search produced valid chunks
             if (this.chunks) {
                 //It fits
                 if (this.element.clientHeight <= maxHeight) {
                     //There's still more characters to try splitting on, not quite done yet
-                    if (this.splitOnChars.length >= 0 && splitChar != '') {
+                    if (this.splitOnChars.length >= 0) {
                         this.applyEllipsis(target, this.chunks.join(splitChar) + splitChar + this.lastChunk);
                         this.chunks = null;
                     }
@@ -307,7 +290,6 @@
         */
         reset: function () {
             this.$.textPara.innerHTML = this.text;
-            splitChar = this.splitOnChars[0];
             this.chunks = null;
             this.lastChunk = null;
         },
