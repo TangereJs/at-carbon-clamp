@@ -72,7 +72,7 @@
         ready: function () {
             this._afterReady = true; //Flag that should fix issue of properties triggering observer method before ready state
             
-            if(this.innerText.length > 0 && this.text.length == 0){
+            if(this.innerText.trim().length > 0 && ( this.text === undefined || this.text.length == 0)){
                 this.text = this.innerText.slice().trim();
                 
                 for(var i=0; i<this.childNodes.length; i++)//Remove only text node from this.textContent
