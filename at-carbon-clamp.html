@@ -27,7 +27,9 @@
         <div id="clampWrapper" style="height:100%">
             <div id="textPara"></div>
         </div>
-        <content></content>
+        <div id="content" style="display:none">
+            <content></content>
+        </div>
     </template>
 </dom-module>
 <script>
@@ -38,17 +40,19 @@
             text: {
                 type: String,
                 value: '', 
-                reflect: true,
-                observer:'propChanged'
+                reflect: true
             },
             lines: { 
                 type: Number,
                 value: 1, 
-                reflect: true,
-                observer:'propChanged'
+                reflect: true
             }
         },
           
+        observers:[
+            'propChanged(text, lines)'
+        ],
+        
         options: new Object(),
         splitOnChars : /(?=(?=\s+)|(?=\.+)|(?=-+)|(?=–+)|(?=—+)|(?=,+))/, //Regex for text splitting on defined characters
         chunks: null,
@@ -73,8 +77,8 @@
         ready: function () {
             this._afterReady = true; //Flag that should fix issue of properties triggering observer method before ready state
             
-            if(this.innerText.trim().length > 0 && ( this.text === undefined || this.text.length == 0)){
-                this.text = this.innerText.slice().trim();
+            if(( this.text === undefined || this.text.length == 0) && (this.$.content.innerHTML.trim().length > 0)){
+                this.text = this.$.content.innerHTML.slice().trim();
                 
                 for(var i=0; i<this.childNodes.length; i++)//Remove only text node from this.textContent
                 {
