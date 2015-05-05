@@ -7,6 +7,7 @@
 * Released under the WTFPL license
 * http://sam.zoy.org/wtfpl/
 */
+<link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../at-core-theme/at-core-theme.html">
 <dom-module id="at-carbon-clamp">
     <style>
@@ -27,9 +28,7 @@
         <div id="clampWrapper" style="height:100%">
             <div id="textPara"></div>
         </div>
-        <div id="content" style="display:none">
-            <content></content>
-        </div>
+        <content></content>
     </template>
 </dom-module>
 <script>
@@ -76,10 +75,10 @@
         
         ready: function () {
             this._afterReady = true; //Flag that should fix issue of properties triggering observer method before ready state
-            
-            if(( this.text === undefined || this.text.length == 0) && (this.$.content.innerHTML.trim().length > 0)){
-                this.text = this.$.content.innerHTML.slice().trim();
-                
+
+            var innerText = this.textContent.slice().trim();
+            if(( this.text === undefined || this.text.length == 0) && (innerText.length > 0)){
+                this.text = innerText;                
                 for(var i=0; i<this.childNodes.length; i++)//Remove only text node from this.textContent
                 {
                     if(this.childNodes[i].nodeType==3)//TEXT_NODE
@@ -96,7 +95,7 @@
         },
         
         clampText: function () {
-            this.debounce('clamp', function(){
+            this.debounce('clampText', function(){
                 this.$.textPara.style.width = '100%';
                 if (this.lines === 1) {
                     this.$.textPara.textContent = this.text;
@@ -119,7 +118,7 @@
             this.reset();
             this.element = this.$.textPara;
                 
-            var originalText = this.element.innerHTML,
+            var originalText = this.element.textContent,
                 clampValue = options.clamp,
                 isCSSValue = clampValue.indexOf && (clampValue.indexOf('px') > -1 || clampValue.indexOf('em') > -1);
                 
@@ -134,11 +133,26 @@
             var clampedText;
             var height = this.getMaxHeight(clampValue, this.element);
             
+            //debugger;
+            
+            console.log("window.getComputedStyle(div).height: " + window.getComputedStyle(this).height);
+            console.log("div.offsetHeight: " + this.offsetHeight);
+            console.log("object.getBoundingClientRect(): " + this.getBoundingClientRect().height);
+            
             this.element.parentNode.style.textOverflow = 'ellipsis';
             this.element.parentNode.style.overflow = 'hidden';
             this.element.parentNode.style.height = height + "px";
             
+            console.log("forcing a reflow");
+            var origDisplayValue = this.style.display;
+            this.style.display = "none";
+            this.style.display = origDisplayValue;
+            
             if(height < this.element.clientHeight){
+                
+                console.log("height:" + height + "||||this.element.clientHeight:" + this.element.clientHeight);
+                console.log("************************************");
+                
                 clampedText = this.truncate(this.getLastChild(this.element), height);
             }
             this.element.parentNode.style.height = "";
@@ -210,8 +224,7 @@
             if (lh == 'normal') {
                 // Normal line heights vary from browser to browser. The spec recommends
                 // a value between 1.0 and 1.2 of the font size. Using 1.1 to split the diff.
-                lh = parseInt(this.computeStyle(elem, 'font-size')) * 1.2;
-                console.log("lh: " + lh);
+                lh = parseInt(this.computeStyle(elem, 'font-size')) * 1.1;
             }
             return parseInt(lh);
         },
@@ -255,16 +268,14 @@
                 this.lastChunk = this.chunks.pop();
                 this.applyEllipsis(target, this.chunks.join(""));
             }
-//            //No more chunks can be removed using this character
-//            else {
-//                this.chunks = null;
-//            }
 
             //Search produced valid chunks
             if (this.chunks) {
                 //It fits
+//                console.log("CLH: " + this.element.clientHeight+ " H:" + maxHeight);
+                
                 if (this.element.clientHeight <= maxHeight) {
-                    return this.innerHTML;
+                    return this.textContent;
                 }
             }
             
@@ -283,13 +294,13 @@
         * Resets global variables.
         */
         reset: function () {
-            this.$.textPara.innerHTML = this.text;
+            this.$.textPara.textContent = this.text;
             this.chunks = null;
             this.lastChunk = null;
         },
         
         applyEllipsis: function (elem, str) {
             elem.nodeValue = str + options.truncationChar;
-        }   
+        }
     });
 </script>
