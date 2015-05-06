@@ -108,8 +108,9 @@
                     
                     var wrapperHeight = this.getLineHeight(this.$.textPara) * lineNumber;
                     $(this).height(wrapperHeight);
-                    
                     $(this).dotdotdot();
+                    
+                    //$(this).dotdotdot({ height:wrapperHeight});
                 }
             }, 50);
         },
