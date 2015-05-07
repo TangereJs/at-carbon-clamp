@@ -79,12 +79,12 @@
         },
 		
     	ready : function () {
-			if (this.lines > 1) {
-    			//Fix for non chrome browsers
-    			if (navigator.userAgent.toLowerCase().indexOf('chrome') < 0) {
-    				this.lines = this.lines + 1;
-    			}
-    		}
+			//if (this.lines > 1) {
+    		//	//Fix for non chrome browsers
+    		//	if (navigator.userAgent.toLowerCase().indexOf('chrome') < 0) {
+    		//		this.lines = this.lines + 1;
+    		//	}
+    		//}
 			
 			var innerText = this.textContent.slice().trim();
             if(( this.text === undefined || this.text.length == 0) && (innerText.length > 0)){
