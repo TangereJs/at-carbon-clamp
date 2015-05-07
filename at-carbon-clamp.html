@@ -20,11 +20,11 @@
 		}
 
 		.wrap{
-			border : 'none';
+			border : none;
             margin : 0;
             padding: 0;
-            width  : 'auto';
-            height : 'auto;
+            width  : auto;
+            height : auto;
 		}
 	  
 		#textPara {
@@ -60,7 +60,7 @@
     		'propChanged(text, lines)'
     	],
 		
-		ellipsis: '…',
+    	ellipsis: '…',
 
     	propChanged : function () {
 			if(!this._afterReady)
@@ -68,13 +68,13 @@
 				return;
 			}
 			
-			this.update(this.text);
+			this.clampText();
     	},
 
 		attached: function () {
             var that = this;
             window.addEventListener('resize', function (event) {
-                that.update(this.text);
+                that.clampText();
             }.bind(this));
         },
 		
@@ -114,7 +114,16 @@
     				this.$.textPara.style.whiteSpace = 'nowrap';
     				this.$.textPara.style.overflow = 'hidden';
     			} else {
-    				this.lineHeight = this.getLineHeight(this.$.textPara)
+    			    this.lineHeight = this.getLineHeight(this.$.textPara)
+    			    if (!this.lineHeight)
+    			    {
+    			        console.log("clampText: wait for lineHeight");
+    			        this.async(function () {
+    			            this.clampText();
+    			        }, 100);
+    			        return;
+    			    }
+                    
 					this.truncate();
     			}
 
@@ -240,30 +249,31 @@
     	 *
     	 * Returns nothing.
     	 */
-    	update : function (textContent) {
-    		// Update HTML if provided, otherwise use the current html and restore
-    		// the truncated content to the original if it's currently present.
-			
-    		if (textContent) {
-    			this.original = this.$.textPara.innerHTML = textContent;
-    		} else if (this.$.textPara.innerHTML === this.cached) {
-    			this.$.textPara.innerHTML = this.original;
-    		}
+    	update: function (textContent) {
+    	    // Update HTML if provided, otherwise use the current html and restore
+    	    // the truncated content to the original if it's currently present.
 
-    		// Wrap the contents in order to ignore container's margin/padding.
-    		this.$.textPara.classList.add("wrap");
+    	    if (textContent) {
+    	        this.original = this.$.textPara.innerHTML = textContent;
+    	    } else if (this.$.textPara.innerHTML === this.cached) {
+    	        this.$.textPara.innerHTML = this.original;
+    	    }
 
-    		// Check if already meets height requirement
-    		var parentHeight = parseInt(this.computeStyle(this.$.textPara, 'height'));
-    		if (parentHeight > this.maxHeight) {
-    			this.truncateTextContent(this.$.textPara, this.$.textPara);
-    		}
+    	    // Wrap the contents in order to ignore container's margin/padding.
+    	    this.$.textPara.classList.add("wrap");
 
-    		// Restore the wrapped contents
-			this.$.textPara.classList.remove("wrap");
+    	    // Check if already meets height requirement
+    	    //console.log("clientHeight: " + this.$.textPara.clientHeight + " maxHeight: " + this.maxHeight);
+    	    if (this.$.textPara.clientHeight > this.maxHeight) {
+    	        this.truncateTextContent(this.$.textPara, this.$.textPara);
+    	    }
 
-    		// Cache the truncated content
-    		this.cached = this.$.textPara.innerHTML;
+    	    // Restore the wrapped contents
+    	    this.$.textPara.classList.remove("wrap");
+
+    	    // Cache the truncated content
+    	    this.cached = this.$.textPara.innerHTML;
+
     	},
     });
 </script>
