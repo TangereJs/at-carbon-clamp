@@ -115,7 +115,7 @@
     				this.$.textPara.style.overflow = 'hidden';
     			} else {
     			    this.lineHeight = this.getLineHeight(this.$.textPara)
-    			    if (!this.lineHeight)
+    			    if (!this.lineHeight && this.text)
     			    {
     			        console.log("clampText: wait for lineHeight");
     			        this.async(function () {
