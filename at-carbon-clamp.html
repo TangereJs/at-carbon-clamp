@@ -71,9 +71,15 @@
 			this.clampText();
     	},
 
+    	detached: function() {
+    	  if (this._windowResizeCallbackHandler) {
+    	    window.removeEventListener('resize', this._windowResizeCallbackHandler, true);
+    	    this._windowResizeCallbackHandler = null;
+    	  }
+    	},
 		attached: function () {
             var that = this;
-            window.addEventListener('resize', function (event) {
+             window.addEventListener('resize', this._windowResizeCallbackHandler = function (event) {
                 that.clampText();
             }.bind(this));
         },
