@@ -9,7 +9,7 @@
 */
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../at-core-theme/at-core-theme.html">
+
 <dom-module id="at-carbon-clamp">
   <style>
     :host {
@@ -26,15 +26,8 @@
       width: auto;
       height: auto;
     }
-/*
-    #textPara {
-      -webkit-transform: translateZ(0);
-       hack to force Chrome to handle divs outside visible viewport correctly 
-    }
-*/
   </style>
-  <template>
-    <at-core-theme></at-core-theme>
+  <template>    
     <div id="clampWrapper" style="height:100%">
       <div id="textPara"></div>
     </div>
@@ -86,12 +79,6 @@
     },
 
     ready: function () {
-      //if (this.lines > 1) {
-      //	//Fix for non chrome browsers
-      //	if (navigator.userAgent.toLowerCase().indexOf('chrome') < 0) {
-      //		this.lines = this.lines + 1;
-      //	}
-      //}
 
       var innerText = this.textContent.slice().trim();
       if ((this.text === undefined || this.text.length == 0) && (innerText.length > 0)) {
