@@ -66,6 +66,7 @@
     },
 
     detached: function () {
+      this._attached = false;
       if (this._windowResizeCallbackHandler) {
         window.removeEventListener('resize', this._windowResizeCallbackHandler, true);
         this._windowResizeCallbackHandler = null;
@@ -73,6 +74,7 @@
     },
     attached: function () {
       var that = this;
+      this._attached = true;
       window.addEventListener('resize', this._windowResizeCallbackHandler = function (event) {
         that.clampText();
       }.bind(this));
@@ -109,7 +111,7 @@
           this.$.textPara.style.overflow = 'hidden';
         } else {
           this.lineHeight = this.getLineHeight(this.$.textPara)
-          if (!this.lineHeight && this.text) {
+          if (!this.lineHeight && this.text && this._attached) {
             console.log("clampText: wait for lineHeight");
             this.async(function () {
               this.clampText();
