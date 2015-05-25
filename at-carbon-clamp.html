@@ -106,10 +106,21 @@
         this.$.textPara.textContent = this.text;
 
         if (this.lines === 1) {
+        
           this.$.textPara.style.textOverflow = 'ellipsis';
           this.$.textPara.style.whiteSpace = 'nowrap';
           this.$.textPara.style.overflow = 'hidden';
+        
+        } else if (typeof document.head.style.webkitLineClamp == 'string') {
+          
+          // native webkit clamp
+            this.$.textPara.style.display = "-webkit-box";
+            this.$.textPara.style.webkitLineClamp = this.lines;
+            this.$.textPara.style.webkitBoxOrient = "vertical";
+            this.$.textPara.style.overflow = 'hidden';
+
         } else {
+          
           this.lineHeight = this.getLineHeight(this.$.textPara)
           if (!this.lineHeight && this.text && this._attached) {
             console.log("clampText: wait for lineHeight");
