@@ -27,7 +27,7 @@
       height: auto;
     }
   </style>
-  <template>    
+  <template>
     <div id="clampWrapper" style="height:100%">
       <div id="textPara"></div>
     </div>
@@ -42,12 +42,12 @@
       text: {
         type: String,
         value: '',
-        reflect: true
+        xtype: "textarea"
       },
       lines: {
         type: Number,
         value: 1,
-        reflect: true
+        observer: "linesChanged"
       }
     },
 
@@ -100,27 +100,34 @@
       this._afterReady = true;
     },
 
+    linesChanged: function (newValue, oldValue) {
+      var lines = parseInt(newValue);
+      this.lines = lines;
+      this.clampText();
+    },
+
     clampText: function () {
       this.debounce('clampText', function () {
         this.$.textPara.style.width = '100%';
         this.$.textPara.textContent = this.text;
 
         if (this.lines === 1) {
-        
+
           this.$.textPara.style.textOverflow = 'ellipsis';
           this.$.textPara.style.whiteSpace = 'nowrap';
           this.$.textPara.style.overflow = 'hidden';
-        
+
         } else if (typeof document.head.style.webkitLineClamp == 'string') {
-          
+
           // native webkit clamp
             this.$.textPara.style.display = "-webkit-box";
             this.$.textPara.style.webkitLineClamp = this.lines;
             this.$.textPara.style.webkitBoxOrient = "vertical";
             this.$.textPara.style.overflow = 'hidden';
+            this.$.textPara.style.whiteSpace = '';
 
         } else {
-          
+          this.$.textPara.style.whiteSpace = '';
           this.lineHeight = this.getLineHeight(this.$.textPara)
           if (!this.lineHeight && this.text && this._attached) {
             console.log("clampText: wait for lineHeight");
@@ -249,7 +256,7 @@
       }
     },
 
-    /* Public: Updates the inner HTML of the element and re-truncates. 
+    /* Public: Updates the inner HTML of the element and re-truncates.
      *
      * textContent - The new textContent.
      *
