@@ -14,8 +14,6 @@
   <style>
     :host {
       position: relative;
-      width: 100%;
-      height: 100%;
       box-sizing: border-box;
       display: block;
     }
@@ -107,26 +105,30 @@
     },
 
     clampText: function () {
+      
       this.debounce('clampText', function () {
+        
         this.$.textPara.style.width = '100%';
         this.$.textPara.textContent = this.text;
+        //console.log(this.lines + " " + this.text);
 
         if (this.lines === 1) {
-
+          
           this.$.textPara.style.textOverflow = 'ellipsis';
           this.$.textPara.style.whiteSpace = 'nowrap';
           this.$.textPara.style.overflow = 'hidden';
 
-        } else if (typeof document.head.style.webkitLineClamp == 'string') {
-
-          // native webkit clamp
-            this.$.textPara.style.display = "-webkit-box";
-            this.$.textPara.style.webkitLineClamp = this.lines;
-            this.$.textPara.style.webkitBoxOrient = "vertical";
-            this.$.textPara.style.overflow = 'hidden';
-            this.$.textPara.style.whiteSpace = '';
+        //} else if (typeof document.head.style.webkitLineClamp == 'string') {
+        //    //console.log("native webkit clamp");
+        //    // native webkit clamp  -- fails sometimes -- so disabled
+        //    this.$.textPara.style.display = "-webkit-box";
+        //    this.$.textPara.style.webkitLineClamp = this.lines;
+        //    this.$.textPara.style.webkitBoxOrient = "vertical";
+        //    this.$.textPara.style.overflow = 'hidden';
+        //    this.$.textPara.style.whiteSpace = '';
 
         } else {
+
           this.$.textPara.style.whiteSpace = '';
           this.lineHeight = this.getLineHeight(this.$.textPara)
           if (!this.lineHeight && this.text && this._attached) {
@@ -140,7 +142,7 @@
           this.truncate();
         }
 
-      }, 50);
+      }, 20);
     },
 
     /**
