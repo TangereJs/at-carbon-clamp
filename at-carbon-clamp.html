@@ -1,14 +1,5 @@
-/*
-* Copyright (c) 2015 adenin TECHNOLOGIES. All rights reserved.
-* This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-*
-* based on Clamp.js 0.5.1
-* Copyright 2011-2013, Joseph Schmitt http://joe.sh
-* Released under the WTFPL license
-* http://sam.zoy.org/wtfpl/
-*/
-
 <link rel="import" href="../tangere/tangere.html">
+<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
 
 <dom-module id="at-carbon-clamp">
     <style>
@@ -35,6 +26,9 @@
 <script>
   Polymer({
     is: 'at-carbon-clamp',
+    behaviors: [  
+      Polymer.IronResizableBehavior
+    ],
     _scopeCssViaAttr: true,
     properties: {
       text: {
@@ -62,7 +56,17 @@
 
       this.clampText();
     },
+    listeners: {
+      'iron-resize': '_onIronResize'
+    },
 
+    _onIronResize: function(e) {
+      if (this._pending) {
+        this.clampText();
+        console.log("clamp iron resize, after " + this._pending);
+      }
+      
+    },
     detached: function () {
       this._attached = false;
       if (this._windowResizeCallbackHandler) {
@@ -76,6 +80,7 @@
       window.addEventListener('resize', this._windowResizeCallbackHandler = function (event) {
         that.clampText();
       }.bind(this));
+      this.async(this.notifyResize, 1);
     },
 
     ready: function () {
@@ -112,12 +117,25 @@
         this.$.textPara.textContent = this.text;
         //console.log(this.lines + " " + this.text);
 
-        if (this.lines === 1) {
+        if (this._pending == undefined) {
+          this._pending = false;
+        } else {
+          console.log("clamp _pending " + this._pending);
+        }
+
+        this.lineHeight = this.getLineHeight(this.$.textPara);
+        if (!this.lineHeight && this.text && this._attached && this.lines != 1) {
+          this._pending = true;
+          console.log("pending clamp");
+        }
+
+        if (this.lines === 1 || this._pending) {
 
           this.$.textPara.style.textOverflow = 'ellipsis';
           this.$.textPara.style.whiteSpace = 'nowrap';
           this.$.textPara.style.overflow = 'hidden';
 
+          this._pending = false;
           //} else if (typeof document.head.style.webkitLineClamp == 'string') {
           //    //console.log("native webkit clamp");
           //    // native webkit clamp  -- fails sometimes -- so disabled
@@ -130,16 +148,21 @@
         } else {
 
           this.$.textPara.style.whiteSpace = '';
-          this.lineHeight = this.getLineHeight(this.$.textPara)
+          this.lineHeight = this.getLineHeight(this.$.textPara);
           if (!this.lineHeight && this.text && this._attached) {
-            console.log("clampText: wait for lineHeight");
-            this.async(function () {
-              this.clampText();
-            }, 100);
-            return;
+
+            console.log("clampText: wait for lineHeight -- should not happen any longer");
+            debugger;
+            //this.async(function () {
+            //  this.clampText();
+            //}, 100);
+            //return;
           }
 
+          this._pending = false;
           this.truncate();
+          this.fire("content-changed", this, { bubbles: true });
+
         }
 
       }, 20);
