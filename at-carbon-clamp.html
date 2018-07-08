@@ -103,9 +103,10 @@
       this._afterReady = true;
     },
 
-    linesChanged: function (newValue, oldValue) {
+    linesChanged: function (newValue, oldValue) {      
       var lines = parseInt(newValue);
       this.lines = lines;
+      this.maxHeight = undefined;      
       this.clampText();
     },
 
