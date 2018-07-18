@@ -41,11 +41,20 @@
         type: Number,
         value: 1,
         observer: "linesChanged"
+      },
+
+      clampMode: {
+        type: String,
+        value: "0",
+        xvaluelist: [
+          { value: "0", title: "By character" },
+          { value: "1", title: "By word" }
+        ]
       }
     },
 
     observers: [
-      'propChanged(text, lines)'
+      'propChanged(text, lines, clampMode)'
     ],
 
     ellipsis: '…',
@@ -131,7 +140,7 @@
           console.log("pending clamp");
         }
 
-        if (this.lines === 1 || this._pending) {
+        if (this.clampMode == "0" && (this.lines === 1 || this._pending)) {
 
           this.$.textPara.style.textOverflow = 'ellipsis';
           this.$.textPara.style.whiteSpace = 'nowrap';
@@ -180,7 +189,9 @@
         // a value between 1.0 and 1.2 of the font size. Using 1.1 to split the diff.
         lh = parseInt(this.computeStyle(elem, 'font-size')) * 1.1;
       }
-      return parseInt(lh);
+      // There was a problem with parseInt because it would Math.floor the float value computed above, ie 17.6 would become 17
+      // This caused a bug with Line 298 "if (rootNodeHeight > this.maxHeight)" because rootNodeHeight would be 18px and maxHeight would be 17 for the same css set on this.$.textPara; using Math.ceil solves the issue
+      return Math.ceil(lh);
     },
 
     /**
@@ -265,10 +276,25 @@
       while (low <= high) {
         mid = low + ((high - low) >> 1); // Integer division
 
-        chunk = original.substr(0, mid + 1).trim() + this.ellipsis;
+        var tmpChunk = original.substr(0, mid + 1);
+        if (this.clampMode == "1") {
+          
+          if (tmpChunk[tmpChunk.length -1] !== " ") {
+            // if end of the chunk is not empty space, find the last index of empty space and resize the chunk to 
+            var indexOfLastWhitespace = tmpChunk.lastIndexOf(' ');
+            if (indexOfLastWhitespace > 0) {
+              tmpChunk = tmpChunk.substr(0, indexOfLastWhitespace);
+            }
+          }
+
+          // in the middle of the original is empty space, its enough to just trim
+          tmpChunk = tmpChunk.trim();
+        }
+        
+        chunk = tmpChunk + this.ellipsis;
         this.setText(element, chunk);
 
-        var rootNodeHeight = parseInt(this.computeStyle(rootNode, 'height'));
+        var rootNodeHeight = parseInt(this.computeStyle(rootNode, 'height'), 10);
         if (rootNodeHeight > this.maxHeight) {
           high = mid - 1;
         } else {
