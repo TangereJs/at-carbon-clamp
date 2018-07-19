@@ -189,6 +189,8 @@
         // a value between 1.0 and 1.2 of the font size. Using 1.1 to split the diff.
         lh = parseInt(this.computeStyle(elem, 'font-size')) * 1.1;
       }
+
+      if (lh.indexOf != undefined && lh.indexOf('px') > -1) return parseInt(lh);
       // There was a problem with parseInt because it would Math.floor the float value computed above, ie 17.6 would become 17
       // This caused a bug with Line 298 "if (rootNodeHeight > this.maxHeight)" because rootNodeHeight would be 18px and maxHeight would be 17 for the same css set on this.$.textPara; using Math.ceil solves the issue
       return Math.ceil(lh);
