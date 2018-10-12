@@ -21,7 +21,7 @@
     <div id="clampWrapper" style="height:100%">
       <div id="textPara"></div>
     </div>
-    <content></content>
+    <slot></slot>
   </template>
 </dom-module>
 <script>
@@ -35,17 +35,21 @@
       text: {
         type: String,
         xtype: "textarea",
+        reflectToAttribute: true,
         value: ''
       },
       lines: {
         type: Number,
         value: 1,
+        reflectToAttribute: true,
         observer: "linesChanged"
       },
 
       clampMode: {
         type: String,
         value: "0",
+        reflectToAttribute: true,
+        xtype: "enum",
         xvaluelist: [
           { value: "0", title: "By character" },
           { value: "1", title: "By word" }
