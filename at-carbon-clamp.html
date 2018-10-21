@@ -27,9 +27,7 @@
 <script>
   Polymer({
     is: 'at-carbon-clamp',
-    behaviors: [
-      Polymer.IronResizableBehavior
-    ],
+  
     _scopeCssViaAttr: true,
     properties: {
       text: {
@@ -70,17 +68,7 @@
 
       this.clampText();
     },
-    listeners: {
-      'iron-resize': '_onIronResize'
-    },
 
-    _onIronResize: function(e) {
-      if (this._pending) {
-        this.clampText();
-        console.log("clamp iron resize, after " + this._pending);
-      }
-
-    },
     detached: function() {
       this._attached = false;
       if (this._windowResizeCallbackHandler) {
@@ -94,7 +82,7 @@
       window.addEventListener('resize', this._windowResizeCallbackHandler = function(event) {
         that.clampText();
       }.bind(this));
-      this.async(this.notifyResize, 1);
+     
     },
 
     ready: function() {
@@ -135,7 +123,7 @@
         if (this._pending == undefined) {
           this._pending = false;
         } else {
-          console.log("clamp _pending " + this._pending);
+          //console.log("clamp _pending " + this._pending);
         }
 
         this.lineHeight = this.getLineHeight(this.$.textPara);
