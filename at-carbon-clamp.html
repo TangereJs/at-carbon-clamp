@@ -1,6 +1,5 @@
 <link rel="import" href="../tangere/tangere.html">
 <link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
-
 <dom-module id="at-carbon-clamp">
   <template>
     <style>
@@ -17,35 +16,34 @@
         width: auto;
         height: auto;
       }
+
     </style>
     <div id="clampWrapper" style="height:100%">
       <div id="textPara"></div>
-    </div>
+    </div>  
     <slot></slot>
   </template>
 </dom-module>
 <script>
   Polymer({
     is: 'at-carbon-clamp',
-  
+
     _scopeCssViaAttr: true,
     properties: {
       text: {
         type: String,
-        xtype: "textarea",
-        reflectToAttribute: true,
+        xtype: "textarea",        
         value: ''
       },
       lines: {
         type: Number,
-        value: 1,
-        reflectToAttribute: true,
+        value: 1,        
         observer: "linesChanged"
       },
 
       clampMode: {
         type: String,
-        value: "0",
+        value: "c",
         reflectToAttribute: true,
         xtype: "enum",
         xvaluelist: [
@@ -61,7 +59,13 @@
 
     ellipsis: '…',
 
-    propChanged: function() {
+    propChanged: function () {
+
+      if (!this._isLegacyMode()) {
+        this.clampText();
+        return;
+      }
+
       if (!this._afterReady) {
         return;
       }
@@ -69,23 +73,43 @@
       this.clampText();
     },
 
-    detached: function() {
+    detached: function () {
       this._attached = false;
       if (this._windowResizeCallbackHandler) {
         window.removeEventListener('resize', this._windowResizeCallbackHandler, true);
         this._windowResizeCallbackHandler = null;
       }
     },
-    attached: function() {
-      var that = this;
-      this._attached = true;
-      window.addEventListener('resize', this._windowResizeCallbackHandler = function(event) {
-        that.clampText();
-      }.bind(this));
-     
+
+    _isLegacyMode: function () {      
+      if (Tangere.session.browser.ie11) return true;
+      return false;
+
+      // *todo* validate if still needed
+      if (this.clampMode = "1") {
+        console.warn("clampMode='1' will be removed soon");
+        return true;
+      }
+      return false;
     },
 
-    ready: function() {
+    attached: function () {
+      var that = this;
+      this._attached = true;
+
+      if (this._isLegacyMode()) {
+        window.addEventListener('resize', this._windowResizeCallbackHandler = function (event) {          
+          that.clampText();
+        }.bind(this));
+      }
+    },
+
+    ready: function () {
+
+      if (!this._isLegacyMode()) {
+        this._afterReady = true;
+        return;
+      }
 
       var innerText = this.textContent.slice().trim();
       if ((this.text === undefined || this.text.length == 0) && (innerText.length > 0)) {
@@ -105,16 +129,29 @@
       this._afterReady = true;
     },
 
-    linesChanged: function(newValue, oldValue) {
+    linesChanged: function (newValue, oldValue) {
       var lines = parseInt(newValue);
       this.lines = lines;
       this.maxHeight = undefined;
       this.clampText();
     },
 
-    clampText: function() {
+    clampText: function () {
+      
+      if (!this._isLegacyMode()) {
+        this.text = this.text ? this.text : Polymer.dom(this).innerHTML;
+        Polymer.dom(this).classList.add("at-carbon-clamp");
+        Polymer.dom(this).node.style.webkitLineClamp = this.lines;
+        Polymer.dom(this.root).innerHTML = "<content></content>";
+        return;
+        this.$.textPara.classList.add('clamp');
+        this.$.textPara.style.webkitLineClamp = this.lines;   
+        
+        this.$.textPara.textContent = this.text;
+        return;
+      }
 
-      this.debounce('clampText', function() {
+      this.debounce('clampText', function () {
 
         this.$.textPara.style.width = '100%';
         this.$.textPara.textContent = this.text;
@@ -174,7 +211,7 @@
     /**
      * Returns the line-height of an element as an integer.
      */
-    getLineHeight: function(elem) {
+    getLineHeight: function (elem) {
       var lh = this.computeStyle(elem, 'line-height');
       if (lh == 'normal') {
         // Normal line heights vary from browser to browser. The spec recommends
@@ -194,16 +231,16 @@
      * @param {string} prop The style property.
      * @returns {number}
      */
-    computeStyle: function(elem, prop) {
+    computeStyle: function (elem, prop) {
       if (!window.getComputedStyle) {
-        window.getComputedStyle = function(el, pseudo) {
+        window.getComputedStyle = function (el, pseudo) {
           this.el = el;
-          this.getPropertyValue = function(prop) {
+          this.getPropertyValue = function (prop) {
             var re = /(\-([a-z]){1})/g;
             if (prop == 'float')
               prop = 'styleFloat';
             if (re.test(prop)) {
-              prop = prop.replace(re, function() {
+              prop = prop.replace(re, function () {
                 return arguments[2].toUpperCase();
               });
             }
@@ -228,7 +265,7 @@
      *   // Update HTML
      *   truncated.update('This is not very odd.');
      */
-    truncate: function() {
+    truncate: function () {
       if (this.maxHeight === undefined) {
         this.maxHeight = parseInt(this.lines, 10) * parseInt(this.lineHeight, 10);
       }
@@ -238,7 +275,7 @@
       this.update();
     },
 
-    setText: function(element, text) {
+    setText: function (element, text) {
       if (element.innerText) {
         element.innerText = text;
       } else if (element.nodeValue) {
@@ -257,7 +294,7 @@
      *
      * Returns true if truncation happened, false otherwise.
      */
-    truncateTextContent: function(element, rootNode) {
+    truncateTextContent: function (element, rootNode) {
       var original = element.textContent;
 
       var maxChunk = '';
@@ -272,9 +309,9 @@
 
         var tmpChunk = original.substr(0, mid + 1);
         if (this.clampMode == "1") {
-          
-          if (tmpChunk[tmpChunk.length -1] !== " ") {
-            // if end of the chunk is not empty space, find the last index of empty space and resize the chunk to 
+
+          if (tmpChunk[tmpChunk.length - 1] !== " ") {
+            // if end of the chunk is not empty space, find the last index of empty space and resize the chunk to
             var indexOfLastWhitespace = tmpChunk.lastIndexOf(' ');
             if (indexOfLastWhitespace > 0) {
               tmpChunk = tmpChunk.substr(0, indexOfLastWhitespace);
@@ -284,7 +321,7 @@
           // in the middle of the original is empty space, its enough to just trim
           tmpChunk = tmpChunk.trim();
         }
-        
+
         chunk = tmpChunk + this.ellipsis;
         this.setText(element, chunk);
 
@@ -309,7 +346,7 @@
      *
      * Returns nothing.
      */
-    update: function(textContent) {
+    update: function (textContent) {
       // Update HTML if provided, otherwise use the current html and restore
       // the truncated content to the original if it's currently present.
 
