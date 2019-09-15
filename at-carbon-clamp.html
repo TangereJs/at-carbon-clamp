@@ -142,7 +142,11 @@
         this.text = this.text ? this.text : Polymer.dom(this).innerHTML;
         Polymer.dom(this).classList.add("at-carbon-clamp");
         Polymer.dom(this).node.style.webkitLineClamp = this.lines;
-        Polymer.dom(this.root).innerHTML = "<content></content>";
+        if (Polymer.version.indexOf("1.") == 0) {
+          Polymer.dom(this.root).innerHTML = "<content></content>";
+        } else {
+          Polymer.dom(this.root).innerHTML = "<slot></slot>";
+        }
         return;
         this.$.textPara.classList.add('clamp');
         this.$.textPara.style.webkitLineClamp = this.lines;   
