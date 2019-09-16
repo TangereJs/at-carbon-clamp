@@ -139,7 +139,7 @@
     clampText: function () {
       
       if (!this._isLegacyMode()) {
-        this.text = this.text ? this.text : Polymer.dom(this).innerHTML;
+        if (this.text) Polymer.dom(this).innerHTML = this.text;        
         Polymer.dom(this).classList.add("at-carbon-clamp");
         Polymer.dom(this).node.style.webkitLineClamp = this.lines;
         if (Polymer.version.indexOf("1.") == 0) {
